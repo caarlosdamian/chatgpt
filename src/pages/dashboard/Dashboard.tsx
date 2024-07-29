@@ -1,3 +1,4 @@
+'./Dashboard.css'
 
 export const Dashboard = () => {
   return (
