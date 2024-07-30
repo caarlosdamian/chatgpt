@@ -3,8 +3,8 @@ import './SignIn.css';
 
 export const SingIn = () => {
   return (
-    <div className="">
-      <SignIn path="/sign-in" />
+    <div className="singInPage">
+      <SignIn path="/sign-in" signUpUrl="/sign-up" />
     </div>
   );
 };
