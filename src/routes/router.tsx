@@ -4,6 +4,8 @@ import { Dashboard } from '../pages/dashboard/Dashboard';
 import { ChatPage } from '../pages/chatpage/ChatPage';
 import { RootLayout } from '../layouts/rootLayout/RootLayout';
 import { DashboardLayout } from '../layouts/dashboardLayout/DashboardLayout';
+import { SingIn } from '../pages/signIn/SingIn';
+import { SingUp } from '../pages/signUp/SingUp';
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +14,14 @@ export const router = createBrowserRouter([
       {
         path: '/',
         element: <Homepage />,
+      },
+      {
+        path: '/sign-in',
+        element: <SingIn />,
+      },
+      {
+        path: '/sign-up',
+        element: <SingUp />,
       },
       {
         path: '/dashboard',

@@ -1,5 +1,10 @@
+import { SignIn } from '@clerk/clerk-react';
 import './SignIn.css';
 
 export const SingIn = () => {
-  return <div>SingIn</div>;
+  return (
+    <div className="">
+      <SignIn path="/sign-in" />
+    </div>
+  );
 };
