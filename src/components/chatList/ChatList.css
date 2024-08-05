@@ -3,6 +3,11 @@
   flex-direction: column;
   height: 100%;
 
+  .navlinks{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
   hr {
     border: none;
     height: 2px;
