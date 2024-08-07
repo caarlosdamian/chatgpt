@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { IKContext, IKUpload } from 'imagekitio-react';
 import { useRef } from 'react';
 
@@ -51,7 +52,24 @@ export const Upload = ({ setImage }: Props) => {
   };
 
   const onUploadStart = (evt) => {
-    setImage((prev) => ({ ...prev, isLoading: true, error: false }));
+    const file = evt.target.files[0];
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: false,
+        aiData: {
+          inlineData: {
+            // @ts-ignore
+            data: reader.result.split(',')[1],
+            mimeType: file.type,
+          },
+        },
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
