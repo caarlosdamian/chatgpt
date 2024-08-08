@@ -38,10 +38,12 @@ export default function NewPrompt() {
     generationConfig: {},
   });
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const textValue = e.target?.text?.value;
-
+    const target = e.target as typeof e.target & {
+      text: { value: string };
+    };
+    const textValue = target.text.value;
     if (!textValue) return;
     setQuestion(textValue);
     try {
