@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.2.10",
     "@google/generative-ai": "^0.16.0",
+    "@tanstack/react-query": "^5.51.23",
     "imagekitio-react": "^4.2.0",
     "react": "^19.0.0-rc-941e1b4a-20240729",
     "react-dom": "^19.0.0-rc-941e1b4a-20240729",

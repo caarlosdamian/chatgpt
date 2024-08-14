@@ -1,7 +1,10 @@
 import { FormEvent } from 'react';
 import './Dashboard.css';
+import { useAuth } from '@clerk/clerk-react';
 
 export const Dashboard = () => {
+  const { userId } = useAuth();
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const target = e.target as typeof e.target & {
@@ -9,13 +12,15 @@ export const Dashboard = () => {
     };
     const textValue = target.text.value;
     try {
-      await fetch('http://localhost:3000/api/chats', {
+      const response = await fetch('http://localhost:3000/api/chats', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ text: textValue }),
       });
+   
     } catch (error) {
       console.log(error);
     }

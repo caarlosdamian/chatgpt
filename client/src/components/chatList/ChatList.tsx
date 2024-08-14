@@ -1,7 +1,16 @@
 import { Link } from 'react-router-dom';
 import './ChatList.css';
+import { useQuery } from '@tanstack/react-query';
 
 export const ChatList = () => {
+  const { data } = useQuery({
+    queryKey: ['chats'],
+    queryFn: () =>
+      fetch(`${import.meta.env.VITE_API_URL}chats`, {
+        credentials: 'include',
+      }).then((res) => res.json()),
+  });
+
   return (
     <div className="chatList">
       <span className="title">DASHBOARD</span>
@@ -13,43 +22,11 @@ export const ChatList = () => {
       <hr />
       <span className="title">RECENT CHAT</span>
       <div className="list">
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
-        <Link to="/">My chat title</Link>
+        {data?.map((chat: any) => (
+          <Link to="/" key={chat._id}>
+            {chat.title}
+          </Link>
+        ))}
       </div>
       <hr />
       <div className="upgrate">
