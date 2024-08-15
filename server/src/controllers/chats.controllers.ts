@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
-import { CreateChatInput } from '../schema/chats.schema';
+import {
+  CreateChatInput,
+  GetChatInput,
+  UpdateChatInput,
+} from '../schema/chats.schema';
 import { Chat } from '../model/chat.model';
 import { UserChat } from '../model/userChats.model';
 
@@ -17,9 +21,7 @@ export const createChatHandler = async (
 ) => {
   const { text } = req.body;
   const { userId } = req?.auth;
-  // create new chat
 
-  // const { text } = req.body;
   try {
     const newChat = new Chat({
       userId,
@@ -69,20 +71,63 @@ export const createChatHandler = async (
   }
 };
 
-export const getChatHandler = async (req: Request, res: Response) => {
-  console.log('Entrando');
+export const getChatsHandler = async (req: Request, res: Response) => {
   try {
     const { userId } = req.auth;
-    console.log(userId);
 
     const userChats = await UserChat.find({ userId });
-    console.log(userChats);
     if (userChats.length !== 0) {
-      res.status(200).json(userChats[0].chats);
+      return res.status(200).json(userChats[0].chats);
     }
     res.status(200).json([]);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
+  }
+};
+
+export const getChatHandler = async (
+  req: Request<GetChatInput>,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.auth;
+    const chat = await Chat.findOne({ _id: id, userId });
+    console.log(chat);
+    if (chat) return res.status(200).json(chat);
+    res.status(200).json([]);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
+export const updateChatHandler = async (
+  req: Request<UpdateChatInput['params'], {}, UpdateChatInput['body']>,
+  res: Response
+) => {
+  const { question, answer, img } = req.body;
+  const { userId } = req.auth;
+  const { id } = req.params;
+
+  const newItems = [
+    ...(question
+      ? [{ role: 'user', parts: [{ text: question }], ...(img && { img }) }]
+      : []),
+    { role: 'model', parts: [{ text: answer }] },
+  ];
+  try {
+    const updatedChat = await Chat.updateOne(
+      { _id: id, userId },
+      {
+        $push: {
+          history: {
+            $each: newItems,
+          },
+        },
+      }
+    );
+    res.status(200).json(updatedChat);
+  } catch (error) {
+    console.log(error);
   }
 };

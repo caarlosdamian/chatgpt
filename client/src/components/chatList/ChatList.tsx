@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 export const ChatList = () => {
   const { data } = useQuery({
-    queryKey: ['chats'],
+    queryKey: ['userChats'],
     queryFn: () =>
       fetch(`${import.meta.env.VITE_API_URL}chats`, {
         credentials: 'include',
@@ -15,7 +15,7 @@ export const ChatList = () => {
     <div className="chatList">
       <span className="title">DASHBOARD</span>
       <div className="navlinks">
-        <Link to="/">Create new Chat</Link>
+        <Link to="/dashboard">Create new Chat</Link>
         <Link to="/">Explore Carlos AI</Link>
         <Link to="/">Contact</Link>
       </div>
@@ -23,7 +23,7 @@ export const ChatList = () => {
       <span className="title">RECENT CHAT</span>
       <div className="list">
         {data?.map((chat: any) => (
-          <Link to="/" key={chat._id}>
+          <Link to={`/dashboard/chats/${chat._id}`} key={chat._id}>
             {chat.title}
           </Link>
         ))}

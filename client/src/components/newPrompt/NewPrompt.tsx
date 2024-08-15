@@ -1,13 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import './NewPrompt.css';
 import { Upload } from '../upload/Upload';
 import { IKImage } from 'imagekitio-react';
 import { model } from '../../lib/gemini';
 import Markdown from 'react-markdown';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export default function NewPrompt() {
+interface Prps {
+  data: any;
+}
+
+export default function NewPrompt({ data }: Prps) {
   const endRef = useRef<HTMLDivElement>(null);
   const [question, setQuestion] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
   const [answer, setAnswer] = useState('');
   const urlEndpoint = import.meta.env.VITE_IMAGE_KIT_ENDPOINT;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,11 +25,47 @@ export default function NewPrompt() {
     aiData: {},
   });
 
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: () => {
+      return fetch(`${import.meta.env.VITE_API_URL}chats/${data._id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: question.length ? question : undefined,
+          answer,
+          img: image.dbData?.filePath || undefined,
+        }),
+      }).then((res) => res.json());
+    },
+    onSuccess: (id) => {
+      console.log({ id });
+      queryClient
+        .invalidateQueries({ queryKey: ['chat', data._id] })
+        .then(() => {
+          setQuestion('');
+          setAnswer('');
+          setImage({
+            isLoading: false,
+            error: false,
+            dbData: {},
+            aiData: {},
+          });
+        });
+      formRef?.current?.reset();
+      // navigate(`/dashboard/chats/${id}`);
+    },
+  });
+
   useEffect(() => {
     if (endRef.current) {
       endRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [question, answer, image?.dbData]);
+  }, [question, answer, image?.dbData, data]);
 
   const chat = model.startChat({
     history: [
@@ -38,14 +81,9 @@ export default function NewPrompt() {
     generationConfig: {},
   });
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const target = e.target as typeof e.target & {
-      text: { value: string };
-    };
-    const textValue = target.text.value;
-    if (!textValue) return;
-    setQuestion(textValue);
+  const add = async (textValue: string, isInitial?: boolean) => {
+    if (!isInitial) setQuestion(textValue);
+
     try {
       const result = await chat.sendMessageStream(
         Object.entries(image?.aiData)?.length
@@ -55,21 +93,38 @@ export default function NewPrompt() {
       let acumulatedText = '';
       for await (const chunk of result.stream) {
         const chunkText = chunk.text();
-        console.log(chunkText);
         acumulatedText += chunkText;
         setAnswer(acumulatedText);
       }
 
-      setImage({
-        isLoading: false,
-        error: false,
-        dbData: {},
-        aiData: {},
-      });
+      mutation.mutate();
     } catch (error) {
       console.log(error);
     }
   };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const target = e.target as typeof e.target & {
+      text: { value: string };
+    };
+    const textValue = target.text.value;
+    if (!textValue) return;
+    add(textValue);
+  };
+
+
+  // in production we dont need it 
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    if (!hasRun.current) {
+      if (data?.history.length === 1) {
+        add(data.history[0].parts[0].text, true);
+      }
+    }
+    hasRun.current = true;
+  }, [data]);
 
   return (
     <>
@@ -90,7 +145,7 @@ export default function NewPrompt() {
         </div>
       )}
       <div className="endChat" ref={endRef}></div>
-      <form action="" className="newForm" onSubmit={handleSubmit}>
+      <form action="" className="newForm" onSubmit={handleSubmit} ref={formRef}>
         <Upload setImage={setImage} />
         <input type="text" name="text" id="" placeholder="Ask anything..." />
         <button type="submit">

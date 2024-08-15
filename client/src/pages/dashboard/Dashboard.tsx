@@ -1,9 +1,32 @@
 import { FormEvent } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
-import { useAuth } from '@clerk/clerk-react';
+import codeImg from '../../../public/code.png';
+import imageImg from '../../../public/image.png';
+import chatImg from '../../../public/chat.png';
 
 export const Dashboard = () => {
-  const { userId } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const mutation = useMutation({
+    mutationFn: (text: string) => {
+      return fetch(`${import.meta.env.VITE_API_URL}chats`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      }).then((res) => res.json());
+    },
+    onSuccess: (id) => {
+      console.log({ id });
+      queryClient.invalidateQueries({ queryKey: ['userChats'] });
+      navigate(`/dashboard/chats/${id}`);
+    },
+  });
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -12,15 +35,7 @@ export const Dashboard = () => {
     };
     const textValue = target.text.value;
     try {
-      const response = await fetch('http://localhost:3000/api/chats', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: textValue }),
-      });
-   
+      mutation.mutate(textValue);
     } catch (error) {
       console.log(error);
     }
@@ -34,15 +49,15 @@ export const Dashboard = () => {
         </div>
         <div className="options">
           <div className="option">
-            <img src="./chat.png" alt="" />
+            <img src={chatImg} alt="" />
             <span>Create a New Chat</span>
           </div>
           <div className="option">
-            <img src="./image.png" alt="" />
+            <img src={imageImg} alt="" />
             <span>Analyze Images</span>
           </div>
           <div className="option">
-            <img src="./code.png" alt="" />
+            <img src={codeImg} alt="" />
             <span>Help me with Code</span>
           </div>
         </div>
